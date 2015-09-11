@@ -8,14 +8,20 @@ import sys
 @asyncio.coroutine
 def worker(get, queue: asyncio.JoinableQueue, output):
     while True:
-        id = yield from queue.get()
-
+        item = yield from queue.get()
+        # This is horrible and I feel bad for writing it, believe me
         try:
-            if id is None:
+            if item is None:
                 return
 
-            data = yield from get("item/{}".format(id))
-            output(data)
+            chunks, id = item
+
+            for i in range(id, id+chunks):
+                try:
+                    data = yield from get("item/{}".format(id))
+                    output(data)
+                except Exception:
+                    pass
         except Exception as e:
             pass
         finally:
@@ -82,8 +88,10 @@ def get_items(data_types, output, to_id, from_id, max_requests):
     workers = [asyncio.async(worker(get, queue, _output)) for i in range(max_requests)]
     monitor_task = asyncio.async(monitor.start())
 
-    for i in range(from_id, to_id):
-        yield from queue.put(i)
+    chunks = 10
+
+    for i in range(from_id, to_id, chunks):
+        yield from queue.put((chunks, i))
 
     for worker_future in workers:
         yield from queue.put(None)
