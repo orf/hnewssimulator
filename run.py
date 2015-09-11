@@ -2,13 +2,13 @@
 hnews-fetcher.
 
 Usage:
-    hnews-fetcher [<data-type>...] [--from=<id> --to=<id>]
+    hnews-fetcher [<data-type>...] [--from=<id> --to=<id>] [--conns=<count>]
 
 Options:
-    --stream        Stream changes
-    --new-items     Only show new comments/stories (not updated/edited ones)
-    --from=<id>     Fetch ID's from this ID
-    --to=<id>       Fetch ID's to this ID
+    --conns=<count> Number of concurrent connections [default: 50].
+    --new-items     Only show new comments/stories (not updated/edited ones).
+    --from=<id>     Fetch ID's from this ID.
+    --to=<id>       Fetch ID's to this ID.
 """
 
 import docopt
@@ -26,6 +26,7 @@ def run():
     data_types = set(arguments["<data-type>"])
     from_id = arguments["--from"]
     to_id = arguments["--to"]
+    conn_count = arguments["--conns"]
 
     if not data_types:
         data_types = {"all"}
@@ -43,8 +44,13 @@ def run():
     else:
         from_id = int(from_id)
 
+    if conn_count is None:
+        conn_count = 50
+    else:
+        conn_count = int(conn_count)
+
     event_loop.run_until_complete(
-        get_items(data_types, output, to_id, from_id=from_id)
+        get_items(data_types, output, to_id, from_id=from_id, max_requests=conn_count)
     )
 
 

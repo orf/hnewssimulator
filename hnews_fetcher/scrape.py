@@ -66,7 +66,7 @@ class Monitor(object):
 
 
 @asyncio.coroutine
-def get_items(data_types, output, to_id, from_id):
+def get_items(data_types, output, to_id, from_id, max_requests):
     def _output(data):
         if filter_item(data_types, data):
             output(data)
@@ -74,12 +74,12 @@ def get_items(data_types, output, to_id, from_id):
     if from_id is None:
         from_id = 1
 
-    monitor = Monitor(to_id, from_id, 50, sys.stderr)
+    monitor = Monitor(to_id, from_id, max_requests, sys.stderr)
 
     get = functools.partial(_get, monitor)
 
-    queue = asyncio.JoinableQueue(maxsize=50)
-    workers = [asyncio.async(worker(get, queue, _output)) for i in range(50)]
+    queue = asyncio.JoinableQueue(maxsize=max_requests)
+    workers = [asyncio.async(worker(get, queue, _output)) for i in range(max_requests)]
     monitor_task = asyncio.async(monitor.start())
 
     for i in range(from_id, to_id):
