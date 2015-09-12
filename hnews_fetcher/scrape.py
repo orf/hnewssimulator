@@ -16,9 +16,9 @@ def worker(get, queue: asyncio.JoinableQueue, output):
 
             chunks, id = item
 
-            for i in range(id, id+chunks):
+            for i in range(id, id + chunks):
                 try:
-                    data = yield from get("item/{}".format(id))
+                    data = yield from get("item/{}".format(i))
                     output(data)
                 except Exception:
                     pass
@@ -47,10 +47,10 @@ class Monitor(object):
         self.output.write("Error @ {id}: {ex}\n".format(id=id, ex=ex))
 
     @asyncio.coroutine
-    def start(self):
+    def start(self, workers):
         prev_req, prev_err = 0, 0
 
-        while not self._stopped:
+        while True:
             yield from asyncio.sleep(1)
             current_req, current_err = self.requests, self.errors
             diff_req, diff_err = current_req - prev_req, current_err - prev_err
@@ -60,14 +60,26 @@ class Monitor(object):
 
             percentage = (current_id / self.max_id) * 100
 
+            worker_total = len(workers)
+            running_workers = [
+                worker for worker in workers
+                if not worker.done()
+                ]
+
+            if len(running_workers) == 0 and self._stopped:
+                return
+
             self.output.write(
-                "[{percentage:3.0f}%] Requests: {reqs}\tErrors: {errors}\t{current}/{max}\t{left}\n".format(
+                "[{percentage:3.0f}%] Requests: {reqs}\tErrors: {errors}\t"
+                "{current}/{max}\tLeft:{left}\t[R:{running}/{workers}]\n".format(
                     percentage=percentage,
                     reqs=diff_req,
                     errors=diff_err,
                     current=current_id,
                     max=self.max_id,
-                    left=self.max_id - current_id))
+                    left=self.max_id - current_id,
+                    running=len(running_workers),
+                    workers=worker_total))
             self.output.flush()
 
 
@@ -86,7 +98,7 @@ def get_items(data_types, output, to_id, from_id, max_requests):
 
     queue = asyncio.JoinableQueue(maxsize=max_requests)
     workers = [asyncio.async(worker(get, queue, _output)) for i in range(max_requests)]
-    monitor_task = asyncio.async(monitor.start())
+    monitor_task = asyncio.async(monitor.start(workers))
 
     chunks = 10
 
@@ -96,8 +108,9 @@ def get_items(data_types, output, to_id, from_id, max_requests):
     for worker_future in workers:
         yield from queue.put(None)
 
-    yield from queue.join()
     monitor.stop()
+
+    yield from queue.join()
     yield from monitor_task
 
 
