@@ -4,6 +4,7 @@ import shutil
 import random
 import random
 import jinja2
+import unicodedata
 
 with open("data/posts.json", "r") as fd:
     posts = json.load(fd)
@@ -32,7 +33,8 @@ def render_section(name, posts):
         random.shuffle(chunk)
 
         with (dist / file_name).open("wb") as fd:
-            fd.write(template.render(posts=chunk, idx=i, is_last=is_last, rand=random.randint).encode("utf8"))
+            txt = template.render(posts=chunk, idx=i, is_last=is_last, rand=random.randint).encode("utf8")
+            fd.write(unicodedata.normalize("NFC", txt))
 
 
 ask_hn = [post for post in posts if post["type"] == "ask"]
@@ -44,7 +46,8 @@ render_section("show", show_hn)
 
 for post in posts:
     with (dist / "comments" / "comments_{0}.html".format(post["id"])).open("wb") as fd:
-        fd.write(comment_template.render(post=post, rand=random.randint).encode("utf8"))
+        txt = comment_template.render(post=post, rand=random.randint).encode("utf8")
+        fd.write(unicodedata.normalize("NFC", txt))
 
 news = dist / "news.css"
 if not news.exists():
