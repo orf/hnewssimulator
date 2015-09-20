@@ -177,8 +177,13 @@ def main():
         random_user_query = sesh.query(Comment.by).order_by(func.random())
 
         comment_sim = train_from_query(comment_query, CommentSim)
+        sim_count = 0
 
         for new_post in our_posts:
+            sim_count += 1
+            if sim_count > 10:
+                comment_sim = train_from_query(comment_query, CommentSim)
+
             user_names = (by[0] for by in random_user_query.limit(random.randint(0, 50)))
             comments = []
 
