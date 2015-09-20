@@ -83,7 +83,7 @@ result = sesh.execute(
 
 sesh.query(Story) \
     .filter(or_(Story.is_ask == True, Story.is_tell == True, Story.is_show == True))\
-    .filter(Story.all_kids != None)\
+    .filter(Story.all_kids == None)\
     .update({"all_kids": func.recurse_children(Story.id)}, synchronize_session=False)
 print("Done")
 if pathlib.Path("data/posts.json").exists():
