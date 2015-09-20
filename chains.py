@@ -105,7 +105,7 @@ def train_from_query(query, cls):
         args = [iter(query)] * 100
 
         for data in itertools.zip_longest(*args, fillvalue=None):
-            corpus.writelines((data[0] for data in data))
+            corpus.writelines((data[0] for data in data if data is not None))
             total += 1
 
         print("Generated corpus ({total} entries) in {time:10f}, length: {len}".format(total=total * 100,
