@@ -196,7 +196,7 @@ def main():
 
                 while len(comment) < comment_length:
                     if (comment_length - len(comment)) < 50:
-                        comment += sim.make_short_sentence(tries=10000,
+                        comment += sim.make_short_sentence(50, tries=10000,
                                                            max_overlap_total=10,
                                                            max_overlap_ratio=0.5)
                     else:
