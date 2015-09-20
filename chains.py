@@ -12,6 +12,7 @@ from sqlalchemy.orm import sessionmaker
 from db import Base, Story, Comment
 import markovify
 import multiprocessing
+import tempfile
 
 
 class CommentSim(markovify.Text):
@@ -76,25 +77,29 @@ else:
 
 def train_from_query(query, cls):
     print("Generating Corpus")
-    corpus = io.StringIO()
+    #corpus = io.StringIO()
 
     total = 0
 
     with Timer() as t:
-        query = (t for t in query.yield_per(1000) if t[0])
+        with tempfile.NamedTemporaryFile() as fd:
+            query = (t for t in query.yield_per(1000) if t[0])
 
-        args = [iter(query)] * 100
+            args = [iter(query)] * 100
 
-        for data in itertools.zip_longest(*args, fillvalue=None):
-            corpus.writelines([data[0] + "\n" for data in data if data is not None])
-            total += 1
+            for data in itertools.zip_longest(*args, fillvalue=None):
+                fd.writelines([data[0] + "\n" for data in data if data is not None])
+                total += 1
 
-        print("Generated corpus ({total} entries) in {time:10f}, length: {len}".format(total=total * 100,
-                                                                                       time=t.elapsed,
-                                                                                       len=len(corpus.getvalue())))
+            fd.seek(0)
+            corpus = fd.read()
+
+            print("Generated corpus ({total} entries) in {time:10f}, length: {len}".format(total=total * 100,
+                                                                                           time=t.elapsed,
+                                                                                           len=len(corpus.getvalue())))
 
     with Timer() as t:
-        sim = cls(corpus.getvalue())
+        sim = cls(corpus)
 
     print("Created simulation {0} in {time:10f} seconds".format(sim.__class__.__name__, time=t.elapsed))
 
