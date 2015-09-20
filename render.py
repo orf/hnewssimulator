@@ -22,15 +22,15 @@ if not comments.exists():
 
 def render_section(name, posts):
     # Split the pages into chunks of 30 and reverse them, because we want newly generated posts to be at the top.
-    page_chunks = list(reversed([posts[x:x + 30] for x in range(0, len(posts), 30)]))
+    page_chunks = list(reversed([posts[x:x + 30] for x in range(0, len(posts), 10)]))
 
     for i, chunk in enumerate(page_chunks):
-        name = "{0}_{1}.html".format(name, i) if i != 0 else "{0}.html".format(name)
+        file_name = "{0}_{1}.html".format(name, i) if i != 0 else "{0}.html".format(name)
         is_last = len(page_chunks) == i + 1
 
         random.shuffle(chunk)
 
-        with (dist / name).open("wb") as fd:
+        with (dist / file_name).open("wb") as fd:
             fd.write(template.render(posts=chunk, idx=i, is_last=is_last).encode("utf8"))
 
 
