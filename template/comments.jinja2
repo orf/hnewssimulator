@@ -1,0 +1,156 @@
+<html op="item">
+<head>
+    <meta name="referrer" content="origin">
+    <link rel="stylesheet" type="text/css" href="/news.css">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <script type="text/javascript">
+        function hide(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.style.visibility = 'hidden';
+            }
+        }
+        function vote(node) {
+            var v = node.id.split(/_/);
+            var item = v[1];
+            hide('up_' + item);
+            hide('down_' + item);
+            var ping = new Image();
+            ping.src = node.href;
+            return false;
+        }
+    </script>
+    <title>The Death of the Party | Hacker News</title></head>
+<body>
+<center>
+    <table id="hnmain" border="0" cellpadding="0" cellspacing="0" width="85%" bgcolor="#f6f6ef">
+        <tr>
+            <td bgcolor="#ff6600">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:2px">
+                    <tr>
+                        <td style="width:18px;padding-right:4px"><a href="https://tomforb.es"><img src="/y18.gif"
+                                                                                                           width="18"
+                                                                                                           height="18"
+                                                                                                           style="border:1px #ffffff solid;"></a>
+                        </td>
+                        <td style="line-height:12pt; height:10px;"><span class="pagetop"><b><a href="/index.html">Hacker
+                            News</a></b><img src="s.gif" height="1" width="10"><a href="#">new</a> | <a
+                                href="#">threads</a> | <a href="#">comments</a> | <a href="/show.html">show</a> | <a
+                                href="/ask.html">ask</a> | <a href="#">jobs</a> | <a href="#">submit</a></span></td>
+                        <td style="text-align:right;padding-right:4px;"><span class="pagetop">
+                              <a href="#">pg</a>
+                (1337) |
+                <a href="#">logout</a>
+                          </span></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr style="height:10px"></tr>
+        <tr>
+            <td>
+                <table border="0">
+                    <tr class='athing'>
+                        <td align="right" valign="top" class="title"><span class="rank"></span></td>
+                        <td>
+                            <center><a id="up_10246963" onclick="return vote(this)"
+                                       href="#">
+                                <div class="votearrow" title="upvote"></div>
+                            </a></center>
+                        </td>
+                        <td class="title"><span class="deadmark"></span><a
+                                href="{{ post.url }}">{{ post.title }}</a><span class="sitebit comhead"> (<a
+                                href="#"><span
+                                class="sitestr">{{ post.host }}</span></a>)</span></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"></td>
+                        <td class="subtext">
+                            <span class="score" id="score_10246963">{{ post.votes }} points</span> by <a
+                                href="#">{{ post.by }}</a> <a href="item?id=10246963">3 hours ago</a> | <a
+                                href="#">flag</a>
+                            | <a
+                                href="#">past</a>
+                            | <a href="#">web</a> | <a
+                                href="item?id=10246963">{{ post.comments|length }} comments</a></td>
+                    </tr>
+                    <tr style="height:10px"></tr>
+                    <tr>
+                        <td colspan="2"></td>
+                        <td>
+                            <form method="post" action="#">
+                                   <textarea
+                                           name="text" rows="6" cols="60"></textarea>
+                                <br><br><input type="submit" value="add comment"></form>
+                        </td>
+                    </tr>
+                </table>
+                <br><br>
+                <table border="0">
+                    {% for comment in post.comments %}
+                    <tr class='athing'>
+                        <td>
+                            <table border="0">
+                                <tr>
+                                    <td class='ind'><img src="s.gif" height="1" width="{{ comment.indent * 40 }}"></td>
+                                    <td valign="top">
+                                        <center><a id="up_10247229" onclick="return vote(this)"
+                                                   href="#">
+                                            <div class="votearrow" title="upvote"></div>
+                                        </a><a id="down_10247229" onclick="return vote(this)"
+                                               href="#">
+                                            <div class="votearrow rotate180" title="downvote"></div>
+                                        </a></center>
+                                    </td>
+                                    <td class="default">
+                                        <div style="margin-top:2px; margin-bottom:-10px;"><span class="comhead">
+          <a href="#">{{ comment.by }}</a> <a href="#">15 minutes ago</a> <span
+                                                class="par"></span><span class="deadmark"></span>          <span
+                                                class='storyon'></span>
+                  </span></div>
+                                        <br><span class="comment">
+                  <span class="c00">{{ comment.text }}</span><div class='reply'><p><font size="1">
+                      <u><a href="#">reply</a></u>
+                  </font>
+                  </div></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <br><br>
+            </td>
+        </tr>
+        <tr>
+            <td><img src="s.gif" height="10" width="0">
+                <table width="100%" cellspacing="0" cellpadding="1">
+                    <tr>
+                        <td bgcolor="#ff6600"></td>
+                    </tr>
+                </table>
+                <br>
+                <center><a href="http://www.ycombinator.com/apply/">
+                    Applications are open for YC Winter 2016
+                </a></center>
+                <br>
+                <center><span class="yclinks"><a href="newsguidelines.html">Guidelines</a>
+        | <a href="newsfaq.html">FAQ</a>
+        | <a href="mailto:hn@ycombinator.com">Support</a>
+        | <a href="https://github.com/HackerNews/API">API</a>
+        | <a href="security.html">Security</a>
+        | <a href="lists">Lists</a>
+        | <a href="bookmarklet.html">Bookmarklet</a>
+        | <a href="dmca.html">DMCA</a>
+        | <a href="http://www.ycombinator.com/apply/">Apply to YC</a>
+        | <a href="mailto:hn@ycombinator.com">Contact</a></span><br><br>
+
+                    <form method="get" action="//hn.algolia.com/">Search:
+                        <input type="text" name="q" value="" size="17"></form>
+                </center>
+            </td>
+        </tr>
+    </table>
+</center>
+</body>
+</html>

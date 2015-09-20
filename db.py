@@ -13,14 +13,18 @@ class Story(Base):
     time = Column(DateTime)
     text = Column(Text, nullable=True)
     url = Column(String, nullable=True)
+    host = Column(String, nullable=True)
     score = Column(Integer)
 
     kids = Column(ARRAY(Integer, dimensions=1))
     dead = Column(Boolean)
     descendants = Column(Integer)
+    all_kids = Column(ARRAY(Integer, dimensions=1), nullable=True)
 
     is_ask = Column(Boolean)
     is_show = Column(Boolean)
+    is_tell = Column(Boolean)
+    is_job = Column(Boolean)
 
 
 class Comment(Base):
@@ -31,6 +35,6 @@ class Comment(Base):
     time = Column(DateTime)
     text = Column(Text)
     kids = Column(ARRAY(Integer, dimensions=1))
-    parent_id = Column(Integer, index=True)
+    parent_id = Column(Integer)
     dead = Column(Boolean)
 

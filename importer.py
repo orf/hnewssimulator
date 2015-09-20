@@ -1,25 +1,25 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from db import Base, Story, Comment
+from db import Base
 import json
 from datetime import datetime
-import sys
 import csv
-import io
+from urllib.parse import urlparse
+import re
+
+TAG_RE = re.compile(r'<[^>]+>')
 
 engine = create_engine("postgresql://hnews:hnews@localhost/hnews")
 Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
-sesh = Session()
 
-with open("data.json", "r") as inp:
-    posts_fd = open("posts.csv", "w", newline="", encoding="utf8")
-    comments_fd = open("comments.csv", "w", newline="", encoding="utf8")
+seen_ids = set()
 
+with open("data/data", "r") as inp, \
+        open("data/posts.csv", "w", newline="", encoding="utf8") as posts_fd, \
+        open("data/comments.csv", "w", newline="", encoding="utf8") as comments_fd:
     comments_out = csv.writer(comments_fd)
     posts_out = csv.writer(posts_fd)
 
-    for line in inp:
+    for i, line in enumerate(inp):
         try:
             parsed = json.loads(line.strip())
         except Exception as e:
@@ -28,29 +28,38 @@ with open("data.json", "r") as inp:
         if parsed.get("deleted", False):
             continue
 
-        if parsed["type"] == "story":
-            if "by" not in parsed:
+        if parsed["id"] in seen_ids:
+            print("!", end="")
+            continue
+
+        seen_ids.add(parsed["id"])
+
+        if parsed["type"] in {"story", "job"}:
+
+            if "title" not in parsed:
                 continue
 
             title = parsed["title"]
             lowered = title.lower()
 
-            is_ask, is_show = False, False
+            is_ask, is_show, is_tell, is_job = False, False, False, False
 
-            if lowered.startswith("ask hn"):
-                title = title[6:]
-                title = title.lstrip(":").strip()
+            if lowered.startswith("ask hn") or lowered.startswith("ask yc") or lowered.startswith("as hn"):
                 is_ask = True
             elif lowered.startswith("show hn"):
-                title = title[7:]
-                title = title.lstrip(":").strip()
                 is_show = True
+            elif lowered.startswith("tell hn"):
+                is_tell = True
 
-            text, url = None, None
+            if parsed["type"] == "job":
+                is_job = True
+
+            text, url, host = None, None, None
             if "url" not in parsed:
                 text = parsed.get("text", "")
             else:
                 url = parsed["url"]
+                host = urlparse(url).netloc.replace("www.", "")
 
             data = (parsed["id"],
                     title,
@@ -58,22 +67,33 @@ with open("data.json", "r") as inp:
                     datetime.fromtimestamp(parsed["time"]),
                     text,
                     url,
+                    host,
                     parsed["score"],
                     "{%s}" % ", ".join(str(x) for x in parsed.get("kids", [])),
                     parsed.get("dead", False),
                     parsed.get("descendants", 0),
+                    None,
                     is_ask,
-                    is_show)
+                    is_show,
+                    is_tell,
+                    is_job)
             posts_out.writerow(data)
         else:
+
+            if "text" not in parsed:
+                print("?", end="")
+                continue
+
+            txt = TAG_RE.sub('', parsed["text"]).replace("\x00", "")
 
             data = (
                 parsed["id"],
                 parsed["by"],
                 datetime.fromtimestamp(parsed["time"]).isoformat(),
-                parsed["text"],
+                txt,
                 "{%s}" % ", ".join(str(x) for x in parsed.get("kids", [])),
                 parsed["parent"],
                 parsed.get("dead", False)
             )
             comments_out.writerow(data)
+
