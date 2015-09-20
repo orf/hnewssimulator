@@ -79,9 +79,9 @@ result = sesh.execute(
     ) SELECT array(SELECT id FROM recursetree);
     $$ LANGUAGE SQL;""")
 
-sesh.execute("UPDATE posts SET all_kids=recurse_children(id) WHERE ARRAY_LENGTH(all_kids, 1) IS NULL OR ARRAY_LENGTH(black_list, 1) < 1")
+sesh.execute("UPDATE posts SET all_kids=recurse_children(id) WHERE ARRAY_LENGTH(all_kids, 1) IS NULL OR ARRAY_LENGTH(all_kids, 1) < 1")
 print("Done")
-
+sesh.commit()
 if pathlib.Path("data/posts.json").exists():
     with open("data/posts.json", "r") as fd:
         created_posts = json.load(fd)
