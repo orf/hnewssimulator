@@ -79,7 +79,8 @@ result = sesh.execute(
     ) SELECT array(SELECT id FROM recursetree);
     $$ LANGUAGE SQL;""")
 
-sesh.execute("UPDATE posts SET all_kids=recurse_children(id) WHERE all_kids=NULL")
+
+sesh.query(Story).update({"all_kids": func.recurse_children(Story.id)}, synchronize_session=False)
 print("Done")
 sesh.commit()
 if pathlib.Path("data/posts.json").exists():
