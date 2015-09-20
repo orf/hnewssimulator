@@ -67,7 +67,7 @@
                         <td colspan="2"></td>
                         <td class="subtext">
                             <span class="score" id="score_10246963">{{ post.votes }} points</span> by <a
-                                href="#">{{ post.by }}</a> <a href="item?id=10246963">3 hours ago</a> | <a
+                                href="#">{{ post.by }}</a> <a href="item?id=10246963">{{ rand(1, 10) }} hours ago</a> | <a
                                 href="#">flag</a>
                             | <a
                                 href="#">past</a>
@@ -105,12 +105,13 @@
                                         </td>
                                         <td class="default">
                                             <div style="margin-top:2px; margin-bottom:-10px;"><span class="comhead">
-          <a href="#">{{ comment.by }}</a> <a href="#">15 minutes ago</a> <span
-                                                    class="par"></span><span class="deadmark"></span>          <span
-                                                    class='storyon'></span>
-                  </span></div>
+          <a href="#">{{ comment.by }}</a> <a href="#">{{ rand(1, 60) }} minutes ago</a> <span
+                                                    class="par"></span><span
+                                                    class="deadmark">{{ "[dead]" if comment.dead }}</span>
+                                                <span class='storyon'></span>
+                                            </span></div>
                                             <br><span class="comment">
-                  <span class="c00">{{ comment.text }}</span><div class='reply'><p><font size="1">
+                  <span class="{{ "c00" if not comment.dead else "cdd" }}">{{ comment.text }}</span><div class='reply'><p><font size="1">
                                             <u><a href="#">reply</a></u>
                                         </font>
                                         </div></td>

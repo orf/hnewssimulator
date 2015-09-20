@@ -167,7 +167,7 @@ def main():
 
         print("Chosen title in {time:6.4f}".format(time=t.elapsed))
 
-        comment_query = sesh.query(Comment.text)
+        comment_query = sesh.query(Comment.text).filter(Comment.dead == False)
         if post_type != "normal":
             comment_query = comment_query.filter(Comment.id.in_(
                 sesh.query(func.unnest(Story.all_kids)).filter_by(**query_args)
@@ -192,7 +192,7 @@ def main():
                     comment += sim.make_sentence(tries=10000,
                                                  max_overlap_total=10,
                                                  max_overlap_ratio=0.5)
-
+                comment = comment.replace(".", ". ")
                 comment_data = {"text": comment, "by": user_name, "dead": is_dead}
                 comments.append(comment_data)
             print("Made {0} comments".format(len(comments)))
