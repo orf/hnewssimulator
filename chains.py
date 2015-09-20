@@ -1,6 +1,6 @@
 from contexttimer import Timer
 from db import Base, Story, Comment
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, or_
 import markovify
 import io
 from sqlalchemy.sql import func
@@ -80,7 +80,7 @@ result = sesh.execute(
     $$ LANGUAGE SQL;""")
 
 sesh.query(Story) \
-    .filter(Story.is_ask == True or Story.is_job == True or Story.is_show == True) \
+    .filter(or_(Story.is_ask == True, Story.is_job == True, Story.is_show == True)) \
     .update({"all_kids": func.recurse_children(Story.id)}, synchronize_session=False)
 print("Done")
 if pathlib.Path("data/posts.json").exists():
