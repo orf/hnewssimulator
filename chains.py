@@ -81,10 +81,10 @@ result = sesh.execute(
     ) SELECT array(SELECT id FROM recursetree);
     $$ LANGUAGE SQL;""")
 
-sesh.query(Story) \
+"""sesh.query(Story) \
     .filter(or_(Story.is_ask == True, Story.is_tell == True, Story.is_show == True))\
     .filter(Story.all_kids == None)\
-    .update({"all_kids": func.recurse_children(Story.id)}, synchronize_session=False)
+    .update({"all_kids": func.recurse_children(Story.id)}, synchronize_session=False)"""
 print("Done")
 if pathlib.Path("data/posts.json").exists():
     with open("data/posts.json", "r") as fd:
