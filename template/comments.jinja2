@@ -111,7 +111,7 @@
                                                 <span class='storyon'></span>
                                             </span></div>
                                             <br><span class="comment">
-                  <span class="{{ "c00" if not comment.dead else "cdd" }}">{{ comment.text }}</span><div class='reply'><p><font size="1">
+                  <span class="{{ "c00" if not comment.dead else "cdd" }}">{{ comment.text.replace("\n", "<br/>") }}</span><div class='reply'><p><font size="1">
                                             <u><a href="#">reply</a></u>
                                         </font>
                                         </div></td>
