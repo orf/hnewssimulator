@@ -5,7 +5,7 @@ import pathlib
 import itertools
 
 from contexttimer import Timer
-from sqlalchemy import create_engine, or_
+from sqlalchemy import create_engine
 from sqlalchemy.sql import func
 from sqlalchemy.orm import sessionmaker
 
@@ -192,12 +192,17 @@ def main():
                 is_dead = random.randint(2, 100) < 5
                 sim = comment_sim if not is_dead else dead_comment_sim
 
-                comment_length, comment = random.randint(0, 500), ""
+                comment_length, comment = random.randint(0, 150), ""
 
                 while len(comment) < comment_length:
-                    comment += sim.make_sentence(tries=10000,
-                                                 max_overlap_total=10,
-                                                 max_overlap_ratio=0.5)
+                    if (comment_length - len(comment)) < 50:
+                        comment += sim.make_short_sentence(tries=10000,
+                                                           max_overlap_total=10,
+                                                           max_overlap_ratio=0.5)
+                    else:
+                        comment += sim.make_sentence(tries=10000,
+                                                     max_overlap_total=10,
+                                                     max_overlap_ratio=0.5)
                 comment = comment.replace(".", ". ")
                 comment_data = {"text": comment, "by": user_name, "dead": is_dead}
                 comments.append(comment_data)
