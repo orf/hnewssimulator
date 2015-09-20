@@ -22,7 +22,8 @@ if not comments.exists():
 
 def render_section(name, posts):
     # Split the pages into chunks of 30 and reverse them, because we want newly generated posts to be at the top.
-    page_chunks = list(reversed([posts[x:x + 30] for x in range(0, len(posts), 10)]))
+    reversed_posts = list(reversed(posts))
+    page_chunks = list([reversed_posts[x:x + 10] for x in range(0, len(posts), 10)])
 
     for i, chunk in enumerate(page_chunks):
         file_name = "{0}_{1}.html".format(name, i) if i != 0 else "{0}.html".format(name)
