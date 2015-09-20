@@ -108,7 +108,8 @@ def train_from_query(query, cls):
             corpus.writelines((data[0] for data in data))
             total += 1
 
-        print("Generated corpus ({total} entries) in {time:10f}, length: {len}".format(total=total, time=t.elapsed,
+        print("Generated corpus ({total} entries) in {time:10f}, length: {len}".format(total=total * 100,
+                                                                                       time=t.elapsed,
                                                                                        len=len(corpus.getvalue())))
 
     with Timer() as t:
