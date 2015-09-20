@@ -1,9 +1,9 @@
-import jinja2
 import json
 import pathlib
 import shutil
-import itertools
 import random
+
+import jinja2
 
 with open("data/posts.json", "r") as fd:
     posts = json.load(fd)

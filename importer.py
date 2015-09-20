@@ -1,10 +1,12 @@
-from sqlalchemy import create_engine
-from db import Base
 import json
 from datetime import datetime
 import csv
 from urllib.parse import urlparse
 import re
+
+from sqlalchemy import create_engine
+
+from db import Base
 
 TAG_RE = re.compile(r'<[^>]+>')
 
@@ -96,4 +98,3 @@ with open("data/data", "r") as inp, \
                 parsed.get("dead", False)
             )
             comments_out.writerow(data)
-

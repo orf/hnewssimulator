@@ -71,3 +71,4 @@ pip-selfcheck.json
 .venv
 .idea
 data/
+venv/

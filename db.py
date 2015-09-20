@@ -37,4 +37,3 @@ class Comment(Base):
     kids = Column(ARRAY(Integer, dimensions=1))
     parent_id = Column(Integer, index=True)
     dead = Column(Boolean)
-

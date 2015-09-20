@@ -62,7 +62,8 @@
                                 </a></center>
                             </td>
                             <td class="title"><span class="deadmark"></span><a
-                                    href="comments/comments_{{ post.id }}.html">{{ post.title }}</a><span class="sitebit comhead"> (<a
+                                    href="comments/comments_{{ post.id }}.html">{{ post.title }}</a><span
+                                    class="sitebit comhead"> (<a
                                     href="#"><span
                                     class="sitestr">{{ post.host }}</span></a>)</span></td>
                         </tr>
@@ -73,7 +74,8 @@
                                     href="#">{{ post.by }}</a>
                                 <a href="#">1 hour ago</a> | <a
                                     href="#">flag</a>
-                                | <a href="comments/comments_{{ post.id }}.html">{{ post.comments|length }} comments</a></td>
+                                | <a href="comments/comments_{{ post.id }}.html">{{ post.comments|length }} comments</a>
+                            </td>
                         </tr>
                         <tr class="spacer" style="height:5px"></tr>
                     {% endfor %}
@@ -81,10 +83,10 @@
                     <tr class="spacer" style="height:5px"></tr>
                     <tr class="morespace" style="height:10px"></tr>
                     {% if not is_last %}
-                    <tr>
-                        <td colspan="2"></td>
-                        <td class="title"><a href="index_{{ idx+1 }}.html" rel="nofollow">More</a></td>
-                    </tr>
+                        <tr>
+                            <td colspan="2"></td>
+                            <td class="title"><a href="index_{{ idx+1 }}.html" rel="nofollow">More</a></td>
+                        </tr>
                     {% endif %}
                 </table>
             </td>

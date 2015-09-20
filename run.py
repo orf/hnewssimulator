@@ -11,10 +11,12 @@ Options:
     --to=<id>       Fetch ID's to this ID.
 """
 
-import docopt
 import asyncio
-import requests
 import json
+
+import docopt
+import requests
+
 from hnews_fetcher.scrape import get_items
 
 event_loop = asyncio.get_event_loop()

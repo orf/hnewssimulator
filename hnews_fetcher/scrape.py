@@ -1,8 +1,8 @@
 import asyncio
 import functools
-import requests
-import aiohttp
 import sys
+
+import aiohttp
 
 
 @asyncio.coroutine
