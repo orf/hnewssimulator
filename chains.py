@@ -79,8 +79,9 @@ result = sesh.execute(
     ) SELECT array(SELECT id FROM recursetree);
     $$ LANGUAGE SQL;""")
 
-
-sesh.query(Story).update({"all_kids": func.recurse_children(Story.id)}, synchronize_session=False)
+sesh.query(Story) \
+    .filter(Story.is_ask == True or Story.is_job == True or Story.is_show == True) \
+    .update({"all_kids": func.recurse_children(Story.id)}, synchronize_session=False)
 print("Done")
 sesh.commit()
 if pathlib.Path("data/posts.json").exists():
