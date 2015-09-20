@@ -166,7 +166,7 @@ def main():
     ) SELECT array(SELECT id FROM recursetree);
     $$ LANGUAGE SQL;""")
 
-    sesh.execute("UPDATE posts SET all_kids=recurse_children(id);")
+    sesh.execute("UPDATE posts SET all_kids=recurse_children(id) WHERE is_ask=true OR is_tell=true OR is_show=true;")
     sesh.execute("COMMIT")
     sesh.execute("BEGIN")
 
