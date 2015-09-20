@@ -63,9 +63,11 @@
                             </td>
                             <td class="title"><span class="deadmark"></span><a
                                     href="comments/comments_{{ post.id }}.html">{{ post.title }}</a><span
-                                    class="sitebit comhead"> (<a
+                                    class="sitebit comhead"> <a
                                     href="#"><span
-                                    class="sitestr">{{ post.host or "" }}</span></a>)</span></td>
+                                    class="sitestr">
+                                    {% if post.host %} ({{ post.host }}) {% endif %}
+                            </span></a></span></td>
                         </tr>
                         <tr>
                             <td colspan="2"></td>
