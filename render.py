@@ -33,8 +33,8 @@ def render_section(name, posts):
         random.shuffle(chunk)
 
         with (dist / file_name).open("wb") as fd:
-            txt = template.render(posts=chunk, idx=i, is_last=is_last, rand=random.randint).encode("utf8")
-            fd.write(unicodedata.normalize("NFC", txt))
+            txt = template.render(posts=chunk, idx=i, is_last=is_last, rand=random.randint)
+            fd.write(unicodedata.normalize("NFC", txt).encode("utf8"))
 
 
 ask_hn = [post for post in posts if post["type"] == "ask"]
@@ -46,8 +46,8 @@ render_section("show", show_hn)
 
 for post in posts:
     with (dist / "comments" / "comments_{0}.html".format(post["id"])).open("wb") as fd:
-        txt = comment_template.render(post=post, rand=random.randint).encode("utf8")
-        fd.write(unicodedata.normalize("NFC", txt))
+        txt = comment_template.render(post=post, rand=random.randint)
+        fd.write(unicodedata.normalize("NFC", txt).encode("utf8"))
 
 news = dist / "news.css"
 if not news.exists():
