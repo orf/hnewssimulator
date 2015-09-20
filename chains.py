@@ -81,7 +81,7 @@ def train_from_query(query, cls):
     total = 0
 
     with Timer() as t:
-        query = (t for t in query.yield_per(100000) if t[0])
+        query = (t for t in query.yield_per(1000) if t[0])
 
         args = [iter(query)] * 100
 
