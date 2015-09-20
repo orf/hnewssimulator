@@ -53,7 +53,7 @@
                 <table border="0" cellpadding="0" cellspacing="0">
                     {% for post in posts %}
                         <tr class='athing'>
-                            <td align="right" valign="top" class="title"><span class="rank">{{ loop.index }}.</span>
+                            <td align="right" valign="top" class="title"><span class="rank">{{ (idx*30) + loop.index }}.</span>
                             </td>
                             <td>
                                 <center><a id="up_10245156" onclick="return vote(this)"
