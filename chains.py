@@ -47,7 +47,7 @@ sesh = Session()
 queries = {
     "ask": {
         "query": {"is_ask": True},
-        "count": 1
+        "count": 2
     },
     "tell": {
         "query": {"is_tell": True},
@@ -55,13 +55,13 @@ queries = {
     },
     "show": {
         "query": {"is_show": True},
-        "count": 1
+        "count": 3
     },
     "normal": {
         "query": {"is_ask": False,
                   "is_tell": False,
                   "is_show": False},
-        "count": 1,
+        "count": 24,
         "comment_seed_count": 1000000
     }
 }
