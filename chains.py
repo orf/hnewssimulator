@@ -168,6 +168,7 @@ def main():
 
     sesh.execute("UPDATE posts SET all_kids=recurse_children(id);")
     sesh.execute("COMMIT")
+    sesh.execute("BEGIN")
 
     """sesh.query(Story) \
         .filter(or_(Story.is_ask == True, Story.is_tell == True, Story.is_show == True))\
