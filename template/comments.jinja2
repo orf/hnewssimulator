@@ -105,7 +105,7 @@
                                         </td>
                                         <td class="default">
                                             <div style="margin-top:2px; margin-bottom:-10px;"><span class="comhead">
-          <a href="#">{{ comment.by }}</a> <a href="#">{{ rand(1, 60) }} minutes ago</a> <span
+          <a href="#" id="{{ loop.index }}">{{ comment.by }}</a> <a href="#{{ loop.index }}">{{ rand(1, 60) }} minutes ago</a> <span
                                                     class="par"></span><span
                                                     class="deadmark">{{ "[dead]" if comment.dead }}</span>
                                                 <span class='storyon'></span>
