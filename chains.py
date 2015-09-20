@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 
 from db import Base, Story, Comment
 import markovify
+import multiprocessing
 
 
 class CommentSim(markovify.Text):
@@ -43,13 +44,11 @@ class SubmissionTitleSim(markovify.Text):
 
 engine = create_engine("postgresql://hnews:hnews@localhost/hnews")
 Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine)
-sesh = Session()
 
 queries = {
     "ask": {
         "query": {"is_ask": True},
-        "count": 2
+        "count": 1
     },
     "tell": {
         "query": {"is_tell": True},
@@ -57,35 +56,17 @@ queries = {
     },
     "show": {
         "query": {"is_show": True},
-        "count": 3
+        "count": 1
     },
     "normal": {
         "query": {"is_ask": False,
                   "is_tell": False,
                   "is_show": False},
-        "count": 24,
+        "count": 1,
         "comment_seed_count": 1000000
     }
 }
-print("Setting all_comments")
-result = sesh.execute(
-    """
-    CREATE OR REPLACE FUNCTION recurse_children(post_id INTEGER)
-    RETURNS integer[] AS $$
-    WITH RECURSIVE recursetree(id, parent_id) AS (
-    SELECT id, parent_id FROM comments WHERE parent_id = post_id
-    UNION
-    SELECT t.id, t.parent_id
-    FROM comments t
-    JOIN recursetree rt ON rt.id = t.parent_id
-    ) SELECT array(SELECT id FROM recursetree);
-    $$ LANGUAGE SQL;""")
 
-"""sesh.query(Story) \
-    .filter(or_(Story.is_ask == True, Story.is_tell == True, Story.is_show == True))\
-    .filter(Story.all_kids == None)\
-    .update({"all_kids": func.recurse_children(Story.id)}, synchronize_session=False)"""
-print("Done")
 if pathlib.Path("data/posts.json").exists():
     with open("data/posts.json", "r") as fd:
         created_posts = json.load(fd)
@@ -115,19 +96,86 @@ def train_from_query(query, cls):
     with Timer() as t:
         sim = cls(corpus.getvalue())
 
-    print("Created simulation in {time:10f} seconds".format(time=t.elapsed))
+    print("Created simulation {0} in {time:10f} seconds".format(sim.__class__.__name__, time=t.elapsed))
 
     return sim
 
 
-dead_comments = sesh.query(Comment.text) \
-    .filter(Comment.dead == True, Comment.text != None) \
-    .order_by(func.random()).limit(30000)
+def make_comment(post_type):
+    Session = sessionmaker(bind=engine)
+    db = Session()
 
-dead_comment_sim = train_from_query(dead_comments, CommentSim)
+    dead_comments = db.query(Comment.text) \
+        .filter(Comment.dead == True, Comment.text != None) \
+        .order_by(func.random()).limit(30000)
+
+    dead_comment_sim = train_from_query(dead_comments, CommentSim)
+
+    comment_query = db.query(Comment.text).filter(Comment.dead == False)
+    if post_type != "normal":
+        comment_query = comment_query.filter(Comment.id.in_(
+            db.query(func.unnest(Story.all_kids)).filter_by(**queries[post_type]["query"])
+        ))
+    comment_query = comment_query.order_by(func.random()).limit(60000)
+    random_user_query = db.query(Comment.by).order_by(func.random())
+
+    comment_sim = train_from_query(comment_query, CommentSim)
+
+    user_names = (by[0] for by in random_user_query.limit(random.randint(0, 50)))
+    comments = []
+
+    for user_name in user_names:
+        is_dead = random.randint(2, 100) < 5
+        sim = comment_sim if not is_dead else dead_comment_sim
+
+        comment_length, comment = random.randint(0, 200), ""
+
+        while len(comment) < comment_length:
+            if (comment_length - len(comment)) < 25:
+                break
+            elif (comment_length - len(comment)) < 50:
+                comment += sim.make_short_sentence(50, tries=10000,
+                                                   max_overlap_total=10,
+                                                   max_overlap_ratio=0.5) + "\n"
+            else:
+                comment += sim.make_short_sentence(100,
+                                                   tries=10000,
+                                                   max_overlap_total=10,
+                                                   max_overlap_ratio=0.5) + "\n"
+        comment = comment.replace(".", ". ")
+        comment_data = {"text": comment, "by": user_name, "dead": is_dead}
+        comments.append(comment_data)
+
+    return comments
 
 
 def main():
+    Session = sessionmaker(bind=engine)
+    sesh = Session()
+    print("Setting all_comments")
+    result = sesh.execute(
+    """
+    CREATE OR REPLACE FUNCTION recurse_children(post_id INTEGER)
+    RETURNS integer[] AS $$
+    WITH RECURSIVE recursetree(id, parent_id) AS (
+    SELECT id, parent_id FROM comments WHERE parent_id = post_id
+    UNION
+    SELECT t.id, t.parent_id
+    FROM comments t
+    JOIN recursetree rt ON rt.id = t.parent_id
+    ) SELECT array(SELECT id FROM recursetree);
+    $$ LANGUAGE SQL;""")
+
+    sesh.execute("UPDATE posts SET all_kids=recurse_children(id);")
+    sesh.execute("COMMIT")
+
+    """sesh.query(Story) \
+        .filter(or_(Story.is_ask == True, Story.is_tell == True, Story.is_show == True))\
+        .filter(Story.all_kids == None)\
+        .update({"all_kids": func.recurse_children(Story.id)}, synchronize_session=False)"""
+    print("Done")
+
+
     for post_type, info in queries.items():
         query_args = info["query"]
         title_query = sesh.query(Story.title).filter_by(**query_args).order_by(func.random())
@@ -167,48 +215,12 @@ def main():
 
         print("Chosen title in {time:6.4f}".format(time=t.elapsed))
 
-        comment_query = sesh.query(Comment.text).filter(Comment.dead == False)
-        if post_type != "normal":
-            comment_query = comment_query.filter(Comment.id.in_(
-                sesh.query(func.unnest(Story.all_kids)).filter_by(**query_args)
-            ))
-        comment_query = comment_query.order_by(func.random()).limit(60000)
+        comments = [post_type] * len(our_posts)
+        pool = multiprocessing.Pool(processes=len(comments) if len(comments) < 5 else 5)
+        comment_data = pool.map(make_comment, comments)
 
-        random_user_query = sesh.query(Comment.by).order_by(func.random())
-
-        comment_sim = train_from_query(comment_query, CommentSim)
-        sim_count = 0
-
-        for new_post in our_posts:
-            sim_count += 1
-            if sim_count > 10:
-                comment_sim = train_from_query(comment_query, CommentSim)
-                sim_count = 0
-
-            user_names = (by[0] for by in random_user_query.limit(random.randint(0, 50)))
-            comments = []
-
-            for user_name in user_names:
-                is_dead = random.randint(2, 100) < 5
-                sim = comment_sim if not is_dead else dead_comment_sim
-
-                comment_length, comment = random.randint(0, 200), ""
-
-                while len(comment) < comment_length:
-                    if (comment_length - len(comment)) < 25:
-                        break
-                    elif (comment_length - len(comment)) < 50:
-                        comment += sim.make_short_sentence(50, tries=10000,
-                                                           max_overlap_total=10,
-                                                           max_overlap_ratio=0.5) + "\n"
-                    else:
-                        comment += sim.make_short_sentence(100,
-                                                           tries=10000,
-                                                           max_overlap_total=10,
-                                                           max_overlap_ratio=0.5) + "\n"
-                comment = comment.replace(".", ". ")
-                comment_data = {"text": comment, "by": user_name, "dead": is_dead}
-                comments.append(comment_data)
+        for i, comments in enumerate(comment_data):
+            post = our_posts[i]
             print("Made {0} comments".format(len(comments)))
             last_indent = None
 
@@ -232,8 +244,7 @@ def main():
                         last_indent -= 1
 
                 comm["indent"] = last_indent
-
-                new_post["comments"].append(comm)
+                post["comments"].append(comm)
 
         created_posts.extend(our_posts)
 
