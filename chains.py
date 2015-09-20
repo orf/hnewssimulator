@@ -2,6 +2,7 @@ import io
 import random
 import json
 import pathlib
+import itertools
 
 from contexttimer import Timer
 from sqlalchemy import create_engine, or_
@@ -97,11 +98,18 @@ def train_from_query(query, cls):
     corpus = io.StringIO()
 
     total = 0
-    for data in (t for t in query.yield_per(10000) if t[0]):
-        corpus.write(data[0] + "\n")
-        total += 1
 
-    print("Generated corpus ({total} entries), length: {len}".format(total=total, len=len(corpus.getvalue())))
+    with Timer() as t:
+        query = (t for t in query.yield_per(10000) if t[0])
+
+        args = [iter(query)] * 100
+
+        for data in itertools.zip_longest(*args, fillvalue=None):
+            corpus.writelines((data[0] for data in data))
+            total += 1
+
+        print("Generated corpus ({total} entries) in {time:10f}, length: {len}".format(total=total, time=t.elapsed,
+                                                                                       len=len(corpus.getvalue())))
 
     with Timer() as t:
         sim = cls(corpus.getvalue())
