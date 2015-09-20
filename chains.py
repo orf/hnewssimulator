@@ -172,14 +172,14 @@ def main():
             comment_query = comment_query.filter(Comment.id.in_(
                 sesh.query(func.unnest(Story.all_kids)).filter_by(**query_args)
             ))
-        comment_query = comment_query.order_by(func.random()).limit(40000)
+        comment_query = comment_query.order_by(func.random()).limit(60000)
 
         random_user_query = sesh.query(Comment.by).order_by(func.random())
 
-        for new_post in our_posts:
-            comment_sim = train_from_query(comment_query, CommentSim)
+        comment_sim = train_from_query(comment_query, CommentSim)
 
-            user_names = (by[0] for by in random_user_query.limit(random.randint(0, 150)))
+        for new_post in our_posts:
+            user_names = (by[0] for by in random_user_query.limit(random.randint(0, 50)))
             comments = []
 
             for user_name in user_names:
