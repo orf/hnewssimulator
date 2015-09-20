@@ -1,4 +1,5 @@
 import io
+import os
 import random
 import json
 import pathlib
@@ -82,21 +83,25 @@ def train_from_query(query, cls):
     total = 0
 
     with Timer() as t:
-        with tempfile.NamedTemporaryFile() as fd:
+        with tempfile.NamedTemporaryFile("w+b", delete=False) as fd:
             query = (t for t in query.yield_per(1000) if t[0])
 
             args = [iter(query)] * 100
 
             for data in itertools.zip_longest(*args, fillvalue=None):
-                fd.writelines([data[0] + "\n" for data in data if data is not None])
+                fd.writelines([(data[0] + "\n").encode("utf8") for data in data if data is not None])
                 total += 1
 
-            fd.seek(0)
+            name = fd.name
+
+        with open(name, encoding="utf8") as fd:
             corpus = fd.read()
 
-            print("Generated corpus ({total} entries) in {time:10f}, length: {len}".format(total=total * 100,
-                                                                                           time=t.elapsed,
-                                                                                           len=len(corpus.getvalue())))
+        os.remove(name)
+
+        print("Generated corpus ({total} entries) in {time:10f}, length: {len}".format(total=total * 100,
+                                                                                       time=t.elapsed,
+                                                                                       len=len(corpus)))
 
     with Timer() as t:
         sim = cls(corpus)
@@ -171,7 +176,7 @@ def main():
     ) SELECT array(SELECT id FROM recursetree);
     $$ LANGUAGE SQL;""")
 
-    sesh.execute("UPDATE posts SET all_kids=recurse_children(id) WHERE is_ask=true OR is_tell=true OR is_show=true;")
+    #sesh.execute("UPDATE posts SET all_kids=recurse_children(id) WHERE is_ask=true OR is_tell=true OR is_show=true;")
     sesh.execute("COMMIT")
     sesh.execute("BEGIN")
 
